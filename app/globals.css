@@ -533,7 +533,7 @@ body {
   }
 
   .lane-tab[aria-selected="true"] {
-    border-color: var(--ink);
+    border-color: #c8c8c8;
     color: var(--ink);
   }
 
@@ -708,7 +708,7 @@ body {
   }
 
   .lane-out.is-ready {
-    border-color: var(--ink);
+    border-color: #c8c8c8;
     opacity: 1;
   }
 
@@ -745,7 +745,7 @@ body {
   }
 
   .lane-out.is-ready .lane-check {
-    border-color: var(--ink);
+    border-color: #c8c8c8;
     opacity: 1;
   }
 
@@ -753,7 +753,7 @@ body {
     width: 12px;
     height: 12px;
     fill: none;
-    stroke: var(--ink);
+    stroke: var(--secondary);
     stroke-width: 2.2;
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -1388,7 +1388,7 @@ body {
   }
 
   .lane-out {
-    border-color: var(--ink);
+    border-color: #c8c8c8;
   }
 
   .lane-out .lane-tile {
@@ -1398,7 +1398,7 @@ body {
   }
 
   .lane-check {
-    border-color: var(--ink);
+    border-color: #c8c8c8;
   }
 
   .diagram-in.is-on {
