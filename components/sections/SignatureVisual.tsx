@@ -1,6 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {
+  BookOpen,
+  Camera,
+  ClipboardCheck,
+  Database,
+  FileText,
+  MessageCircle,
+  Mic,
+  Truck,
+  type LucideIcon,
+} from "lucide-react";
 import { usePrefersReducedMotion } from "@/lib/motion";
 
 type IconName = "chat" | "cam" | "mic" | "book" | "order" | "inv" | "truck" | "db";
@@ -127,6 +138,237 @@ function RowIcon({ name }: { name: IconName }) {
         </>
       ) : null}
     </svg>
+  );
+}
+
+const lanes: {
+  label: string;
+  icon: LucideIcon;
+  title: string;
+  sample: string;
+  outputIcon: LucideIcon;
+  outputTitle: string;
+  outputDetail: string;
+}[] = [
+  {
+    label: "Chat",
+    icon: MessageCircle,
+    title: "WhatsApp message",
+    sample: "“Need 40 brake pads by Friday”",
+    outputIcon: ClipboardCheck,
+    outputTitle: "Order created",
+    outputDetail: "40 brake pads, due Friday",
+  },
+  {
+    label: "Photo",
+    icon: Camera,
+    title: "Photo of a paper bill",
+    sample: "Handwritten, ₹18,400",
+    outputIcon: FileText,
+    outputTitle: "Invoice recorded",
+    outputDetail: "Amount and customer filled in",
+  },
+  {
+    label: "Voice",
+    icon: Mic,
+    title: "Voice note",
+    sample: "“Send the truck to Kochi”",
+    outputIcon: Truck,
+    outputTitle: "Delivery assigned",
+    outputDetail: "Driver and route set",
+  },
+  {
+    label: "Ledger",
+    icon: BookOpen,
+    title: "Paper ledger",
+    sample: "Page 12, stock counts",
+    outputIcon: Database,
+    outputTitle: "Stock updated",
+    outputDetail: "Every item counted and saved",
+  },
+];
+
+function MobileLane() {
+  const reduced = usePrefersReducedMotion();
+  const [index, setIndex] = useState(0);
+  const [cycle, setCycle] = useState(0);
+  const [ready, setReady] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const playRef = useRef<(next: number) => void>(() => {});
+  const autoRef = useRef(!reduced);
+  const indexRef = useRef(0);
+  const lane = lanes[index];
+  const InputIcon = lane.icon;
+  const OutputIcon = lane.outputIcon;
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+
+    const narrow = window.matchMedia("(max-width: 820px)");
+    let alive = true;
+    let generation = 0;
+    let running = false;
+    let onScreen = false;
+    const timers: number[] = [];
+
+    const clear = () => {
+      while (timers.length) window.clearTimeout(timers.pop());
+    };
+
+    const play = (next: number) => {
+      const gen = ++generation;
+      running = true;
+      clear();
+      indexRef.current = next;
+      setIndex(next);
+      setCycle((value) => value + 1);
+      if (reduced) {
+        setReady(true);
+        return;
+      }
+      setReady(false);
+      timers.push(
+        window.setTimeout(() => {
+          if (!alive || gen !== generation) return;
+          setReady(true);
+        }, 1500),
+      );
+      timers.push(
+        window.setTimeout(() => {
+          if (!alive || gen !== generation || !autoRef.current) return;
+          if (!onScreen || document.hidden || !narrow.matches) return;
+          play((next + 1) % lanes.length);
+        }, 4800),
+      );
+    };
+
+    playRef.current = play;
+
+    const sync = () => {
+      if (!alive) return;
+      const visible = narrow.matches && onScreen && !document.hidden;
+      if (visible) {
+        if (!running) play(indexRef.current);
+        return;
+      }
+      running = false;
+      generation += 1;
+      clear();
+    };
+
+    const observer = new IntersectionObserver(([entry]) => {
+      onScreen = Boolean(entry?.isIntersecting);
+      sync();
+    });
+    observer.observe(root);
+    narrow.addEventListener("change", sync);
+    document.addEventListener("visibilitychange", sync);
+
+    return () => {
+      alive = false;
+      generation += 1;
+      clear();
+      observer.disconnect();
+      narrow.removeEventListener("change", sync);
+      document.removeEventListener("visibilitychange", sync);
+    };
+  }, [reduced]);
+
+  const choose = (next: number) => {
+    autoRef.current = false;
+    playRef.current(next);
+  };
+
+  return (
+    <div ref={rootRef} className="diagram-lane">
+      <div
+        className="lane-tabs"
+        role="tablist"
+        aria-label="What you send"
+        onKeyDown={(event) => {
+          if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+          event.preventDefault();
+          const direction = event.key === "ArrowRight" ? 1 : -1;
+          const next = (index + direction + lanes.length) % lanes.length;
+          choose(next);
+          document.getElementById(`lane-tab-${next}`)?.focus();
+        }}
+      >
+        {lanes.map((item, itemIndex) => {
+          const Icon = item.icon;
+          const selected = itemIndex === index;
+          return (
+            <button
+              key={item.label}
+              id={`lane-tab-${itemIndex}`}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              aria-controls="diagram-lane-panel"
+              tabIndex={selected ? 0 : -1}
+              className="lane-tab"
+              onClick={() => choose(itemIndex)}
+            >
+              <Icon size={16} strokeWidth={1.75} aria-hidden="true" />
+              <span>{item.label}</span>
+              <span
+                key={selected ? cycle : "idle"}
+                className={`lane-bar${selected ? (reduced ? " is-done" : cycle > 0 ? " is-run" : "") : ""}`}
+              />
+            </button>
+          );
+        })}
+      </div>
+
+      <div
+        id="diagram-lane-panel"
+        role="tabpanel"
+        aria-labelledby={`lane-tab-${index}`}
+        className="lane-panel"
+      >
+        <div key={cycle} className="lane-story">
+          <article className={reduced ? "lane-card" : "lane-card lane-in"}>
+            <span className="lane-tile">
+              <InputIcon size={20} strokeWidth={1.75} aria-hidden="true" />
+            </span>
+            <div className="lane-text">
+              <p className="lane-kicker">You send</p>
+              <p className="lane-title">{lane.title}</p>
+              <p className="lane-sample">{lane.sample}</p>
+            </div>
+          </article>
+
+          <div className="lane-wire" aria-hidden="true">
+            <span className="lane-dot" />
+            <div className="lane-chip">
+              <div className={reduced ? "lane-chip-face" : "lane-chip-face is-pulse"}>
+                <span className="lane-a">A</span>
+                <span>
+                  <strong>AWXFORGE</strong>
+                  <small>Reads, understands, finishes</small>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <article className={`lane-card lane-out${reduced || ready ? " is-ready" : ""}`}>
+            <span className="lane-tile">
+              <OutputIcon size={20} strokeWidth={1.75} aria-hidden="true" />
+            </span>
+            <div className="lane-text lane-copy">
+              <p className="lane-title">{lane.outputTitle}</p>
+              <p className="lane-sample">{lane.outputDetail}</p>
+            </div>
+            <span className="lane-check">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m5 12 5 5L20 7" />
+              </svg>
+            </span>
+          </article>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -318,6 +560,7 @@ export function SignatureVisual({ caption }: { caption: string }) {
             </div>
           </div>
         </div>
+        <MobileLane />
         <ol className="diagram-legend">
           {legend.map((item) => (
             <li key={item.n}>

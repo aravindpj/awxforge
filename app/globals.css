@@ -484,49 +484,304 @@ body {
   color: var(--secondary);
 }
 
+.diagram-lane {
+  display: none;
+}
+
 @media (max-width: 820px) {
-  .diagram-heads {
-    display: none;
-  }
-
+  .diagram-heads,
   .diagram-grid {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-
-  .diagram-card {
-    width: 100%;
-  }
-
-  .diagram-wire {
     display: none;
   }
 
-  .diagram-forge {
-    order: 0;
-    flex-direction: row;
-    min-height: 120px;
-    margin: 6px 0;
-    text-align: left;
-  }
-
-  .diagram-forge small {
-    min-width: 0;
-  }
-
-  .diagram-in {
-    order: -1;
-  }
-
-  .diagram-out {
-    order: 1;
+  .diagram-lane {
+    display: block;
   }
 
   .diagram-legend {
     grid-template-columns: 1fr;
     gap: 16px;
+  }
+
+  .lane-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .lane-tab {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 0;
+    min-height: 48px;
+    padding: 8px 2px 10px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--secondary);
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .lane-tab[aria-selected="true"] {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+
+  .lane-bar {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left center;
+  }
+
+  .lane-bar.is-run {
+    animation: lane-fill 4.8s var(--ease) forwards;
+  }
+
+  .lane-bar.is-done {
+    transform: scaleX(1);
+  }
+
+  .lane-panel {
+    margin-top: 14px;
+  }
+
+  .lane-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 112px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .lane-in {
+    animation: lane-rise 0.6s var(--ease) both;
+  }
+
+  .lane-tile {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--secondary);
+  }
+
+  .lane-text {
+    display: flex;
+    min-width: 0;
+    min-height: 76px;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .lane-kicker {
+    margin: 0 0 2px;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .lane-title {
+    margin: 0;
+    color: var(--ink);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+  }
+
+  .lane-sample {
+    margin: 2px 0 0;
+    min-height: calc(1.35em * 2);
+    color: var(--secondary);
+    font-size: 16px;
+    line-height: 1.35;
+  }
+
+  .lane-wire {
+    position: relative;
+    height: 96px;
+  }
+
+  .lane-wire::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: var(--line);
+    transform: translateX(-50%);
+  }
+
+  .lane-dot {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    margin-left: -4px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: lane-drop 1.3s var(--ease) forwards;
+  }
+
+  .lane-chip {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 1;
+    max-width: calc(100% - 8px);
+    transform: translate(-50%, -50%);
+  }
+
+  .lane-chip-face {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px 6px 6px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .lane-chip-face.is-pulse {
+    animation: lane-pulse 0.7s var(--ease) 0.85s both;
+  }
+
+  .lane-a {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    background: var(--accent);
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .lane-chip strong {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+  }
+
+  .lane-chip small {
+    display: block;
+    margin-top: 2px;
+    color: var(--secondary);
+    font-size: 11px;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .lane-out {
+    opacity: 0.4;
+    transition: opacity 0.5s var(--ease);
+  }
+
+  .lane-out.is-ready {
+    border-color: var(--ink);
+    opacity: 1;
+  }
+
+  .lane-out.is-ready .lane-tile {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .lane-copy {
+    opacity: 0;
+    transform: translateY(10px);
+    transition:
+      opacity 0.5s var(--ease),
+      transform 0.5s var(--ease);
+  }
+
+  .lane-out.is-ready .lane-copy {
+    opacity: 1;
+    transform: none;
+  }
+
+  .lane-check {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    margin-left: auto;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.4s var(--ease);
+  }
+
+  .lane-out.is-ready .lane-check {
+    border-color: var(--ink);
+    opacity: 1;
+  }
+
+  .lane-check svg {
+    width: 12px;
+    height: 12px;
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+@keyframes lane-fill {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes lane-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes lane-drop {
+  to {
+    transform: translateY(76px);
+  }
+}
+
+@keyframes lane-pulse {
+  50% {
+    transform: scale(1.06);
   }
 }
 
@@ -1107,8 +1362,43 @@ body {
   .agents-live i,
   .agents-sp,
   .agents-panel.is-enter,
-  .agents-slab-name {
+  .agents-slab-name,
+  .lane-bar,
+  .lane-in,
+  .lane-dot,
+  .lane-chip-face {
     animation: none;
+  }
+
+  .lane-bar.is-run,
+  .lane-bar.is-done {
+    transform: scaleX(1);
+  }
+
+  .lane-dot {
+    transform: translateY(76px);
+  }
+
+  .lane-in,
+  .lane-out,
+  .lane-copy,
+  .lane-check {
+    opacity: 1;
+    transform: none;
+  }
+
+  .lane-out {
+    border-color: var(--ink);
+  }
+
+  .lane-out .lane-tile {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .lane-check {
+    border-color: var(--ink);
   }
 
   .diagram-in.is-on {
