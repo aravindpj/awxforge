@@ -347,7 +347,9 @@ function MobileLane() {
             <span className="lane-dot" />
             <div className="lane-chip">
               <div className={reduced ? "lane-chip-face" : "lane-chip-face is-pulse"}>
-                <span className="lane-a">A</span>
+                <span className="lane-a">
+                  <AwxMark variant="full" tight animate="none" />
+                </span>
                 <span>
                   <strong>AWXFORGE</strong>
                   <small>Reads, understands, finishes</small>

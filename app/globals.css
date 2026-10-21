@@ -681,13 +681,14 @@ html[data-intro="exiting"] .mask-line > span {
     display: grid;
     flex: none;
     place-items: center;
-    width: 28px;
+    width: 68px;
     height: 28px;
-    border-radius: 4px;
-    background: var(--accent);
-    color: var(--ink);
-    font-size: 14px;
-    font-weight: 600;
+  }
+
+  .lane-a .awx-mark {
+    width: 68px;
+    height: auto;
+    display: block;
   }
 
   .lane-chip strong {
