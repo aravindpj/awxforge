@@ -1,408 +1,341 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { easeForge } from "@/lib/motion";
+import { useEffect, useRef, useState } from "react";
+import { usePrefersReducedMotion } from "@/lib/motion";
 
-const ink = "#0A0A0A";
-const line = "#E8E8E8";
-const surface = "#FAFAFA";
-const secondary = "#5C5C5C";
-const accent = "#FF4F00";
+type IconName = "chat" | "cam" | "mic" | "book" | "order" | "inv" | "truck" | "db";
 
-function Placed({
-  x,
-  y,
-  rot,
-  dx = 0,
-  dy = 0,
-  origin,
-  children,
-}: {
-  x: number;
-  y: number;
-  rot: number;
-  dx?: number;
-  dy?: number;
-  origin: string;
-  children: React.ReactNode;
-}) {
+const rows: {
+  input: { title: string; detail: string; icon: IconName };
+  output: { title: string; detail: string; icon: IconName };
+}[] = [
+  {
+    input: {
+      title: "WhatsApp message",
+      detail: "“Need 40 brake pads by Friday”",
+      icon: "chat",
+    },
+    output: {
+      title: "Order created",
+      detail: "40 brake pads, due Friday",
+      icon: "order",
+    },
+  },
+  {
+    input: {
+      title: "Photo of a paper bill",
+      detail: "Handwritten, ₹18,400",
+      icon: "cam",
+    },
+    output: {
+      title: "Invoice recorded",
+      detail: "Amount and customer filled in",
+      icon: "inv",
+    },
+  },
+  {
+    input: {
+      title: "Voice note",
+      detail: "“Send the truck to Kochi”",
+      icon: "mic",
+    },
+    output: {
+      title: "Delivery assigned",
+      detail: "Driver and route set",
+      icon: "truck",
+    },
+  },
+  {
+    input: {
+      title: "Paper ledger",
+      detail: "Page 12, stock counts",
+      icon: "book",
+    },
+    output: {
+      title: "Stock updated",
+      detail: "Every item counted and saved",
+      icon: "db",
+    },
+  },
+];
+
+const legend = [
+  {
+    n: "1",
+    title: "You send it the way you always do",
+    body: "No new app. No training. Keep using WhatsApp, photos and voice notes.",
+  },
+  {
+    n: "2",
+    title: "AWXFORGE does the typing",
+    body: "It reads each message and works out what needs to happen.",
+  },
+  {
+    n: "3",
+    title: "The work is already done",
+    body: "Orders, invoices, deliveries and stock are updated for you.",
+  },
+];
+
+function RowIcon({ name }: { name: IconName }) {
   return (
-    <g
-      style={{
-        transform: `translate(calc(${x}px + var(--p) * ${dx}px), calc(${y}px + var(--p) * ${dy}px))`,
-      }}
-    >
-      <g
-        style={{
-          transform: `rotate(calc((1 - var(--p)) * ${rot}deg))`,
-          transformOrigin: origin,
-        }}
-      >
-        {children}
-      </g>
-    </g>
-  );
-}
-
-function Chat() {
-  return (
-    <g>
-      <path d="M0 0 H148 V52 H36 L18 68 V52 H0 Z" fill={surface} stroke={ink} />
-      <text x="12" y="18" fill={secondary} fontSize="11">
-        CHAT
-      </text>
-      <line x1="12" y1="30" x2="92" y2="30" stroke={line} />
-      <line x1="12" y1="40" x2="70" y2="40" stroke={line} />
-    </g>
-  );
-}
-
-function Ledger() {
-  return (
-    <g>
-      <rect width="156" height="88" fill={surface} stroke={ink} />
-      <path d="M132 0 H156 V24" fill="none" stroke={line} />
-      <text x="12" y="18" fill={secondary} fontSize="11">
-        LEDGER
-      </text>
-      <line x1="12" y1="36" x2="118" y2="36" stroke={line} />
-      <line x1="12" y1="50" x2="136" y2="50" stroke={line} />
-      <line x1="12" y1="64" x2="96" y2="64" stroke={line} />
-    </g>
-  );
-}
-
-function Voice() {
-  const heights = [10, 22, 14, 28, 18, 32, 12, 24, 16, 26, 11, 20];
-  return (
-    <g>
-      <rect width="150" height="64" fill={surface} stroke={ink} />
-      <text x="12" y="16" fill={secondary} fontSize="11">
-        VOICE
-      </text>
-      {heights.map((height, index) => {
-        const bar = Math.min(height, 26);
-        return (
-          <rect
-            key={index}
-            x={12 + index * 11}
-            y={56 - bar}
-            width="4"
-            height={bar}
-            fill={ink}
-          />
-        );
-      })}
-    </g>
-  );
-}
-
-function Forwarded() {
-  return (
-    <g>
-      <rect width="132" height="56" fill={surface} stroke={ink} />
-      <text x="12" y="18" fill={secondary} fontSize="11">
-        FWD
-      </text>
-      <path d="M12 32 H48" stroke={line} />
-      <path d="M12 42 H78" stroke={line} />
-      <path d="M100 30 L114 36 L100 42" fill="none" stroke={ink} />
-    </g>
-  );
-}
-
-function Flow({ d, delay }: { d: string; delay: number }) {
-  return (
-    <path
-      d={d}
-      fill="none"
-      stroke={ink}
-      strokeWidth="1"
-      pathLength={1}
-      strokeDasharray={1}
-      style={{
-        strokeDashoffset: `clamp(0, calc(1 - (var(--p) - ${delay}) * 1.45), 1)`,
-        opacity: 0.4,
-      }}
-    />
-  );
-}
-
-function Record({ x, y }: { x: number; y: number }) {
-  const rows = ["{", '  in: "raw",', '  out: "work",', '  state: "clear"', "}"];
-  return (
-    <g>
-      {rows.map((row, index) => (
-        <text
-          key={row}
-          x={x}
-          y={y + index * 20}
-          fill={ink}
-          fontSize="13"
-          style={{ opacity: `clamp(0, calc((var(--p) - ${0.42 + index * 0.06}) * 6), 1)` }}
-        >
-          {row}
-        </text>
-      ))}
-    </g>
-  );
-}
-
-function Checks({ x, y }: { x: number; y: number }) {
-  const items = ["chat → note", "ledger → record", "voice → task"];
-  return (
-    <g>
-      {items.map((label, index) => {
-        const at = 0.72 + index * 0.08;
-        const top = y + index * 28;
-        return (
-          <g key={label} style={{ opacity: `clamp(0, calc((var(--p) - ${at}) * 7), 1)` }}>
-            <rect x={x} y={top} width="12" height="12" fill="none" stroke={ink} />
-            <path
-              d={`M${x + 2} ${top + 6} L${x + 5} ${top + 10} L${x + 10} ${top + 3}`}
-              fill="none"
-              stroke={accent}
-              strokeWidth="1.5"
-              pathLength={1}
-              strokeDasharray={1}
-              style={{
-                strokeDashoffset: `clamp(0, calc((${at + 0.05} - var(--p)) * 12), 1)`,
-              }}
-            />
-            <text x={x + 22} y={top + 11} fill={ink} fontSize="12">
-              {label}
-            </text>
-          </g>
-        );
-      })}
-    </g>
-  );
-}
-
-function Wide() {
-  return (
-    <svg viewBox="0 0 1040 500" className="h-auto w-full" role="presentation">
-      <rect
-        x="16"
-        y="16"
-        width="1008"
-        height="468"
-        fill="none"
-        stroke={line}
-        className="stroke-draw"
-        pathLength={1}
-      />
-      <line
-        x1="400"
-        y1="48"
-        x2="400"
-        y2="460"
-        stroke={line}
-        className="stroke-draw"
-        pathLength={1}
-      />
-      <line
-        x1="670"
-        y1="48"
-        x2="670"
-        y2="460"
-        stroke={line}
-        className="stroke-draw"
-        pathLength={1}
-      />
-      <text x="32" y="40" fill={secondary} fontSize="11">
-        INPUT
-      </text>
-      <text x="416" y="40" fill={secondary} fontSize="11">
-        FORGE
-      </text>
-      <text x="686" y="40" fill={secondary} fontSize="11">
-        OUTPUT
-      </text>
-
-      <Placed x={36} y={72} rot={-7} dx={10} dy={6} origin="74px 34px">
-        <Chat />
-      </Placed>
-      <Placed x={214} y={96} rot={6} dx={-8} dy={8} origin="66px 28px">
-        <Forwarded />
-      </Placed>
-      <Placed x={32} y={210} rot={4} dx={12} dy={-4} origin="78px 44px">
-        <Ledger />
-      </Placed>
-      <Placed x={206} y={340} rot={-5} dx={8} dy={-8} origin="75px 32px">
-        <Voice />
-      </Placed>
-
-      <Flow d="M184 106 C 300 110, 420 200, 520 210" delay={0.05} />
-      <Flow d="M346 124 C 410 120, 460 170, 520 188" delay={0.12} />
-      <Flow d="M188 254 C 300 260, 420 270, 520 268" delay={0.18} />
-      <Flow d="M356 372 C 420 360, 470 320, 520 300" delay={0.24} />
-
-      <line x1="520" y1="64" x2="520" y2="448" stroke={line} />
-      {Array.from({ length: 8 }, (_, index) => (
-        <line
-          key={index}
-          x1="512"
-          y1={88 + index * 44}
-          x2="528"
-          y2={88 + index * 44}
-          stroke={line}
-        />
-      ))}
-      <g style={{ transform: "translateY(calc(var(--p) * 320px))" }}>
-        <line x1="520" y1="64" x2="520" y2="128" stroke={accent} strokeWidth="1.5" />
-      </g>
-
-      <rect x="694" y="72" width="300" height="372" fill="#FFFFFF" stroke={line} />
-      <Record x={714} y={108} />
-      <Checks x={714} y={250} />
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      {name === "chat" ? <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /> : null}
+      {name === "cam" ? (
+        <>
+          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z" />
+          <circle cx="12" cy="13" r="3" />
+        </>
+      ) : null}
+      {name === "mic" ? (
+        <>
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" />
+        </>
+      ) : null}
+      {name === "book" ? (
+        <>
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+        </>
+      ) : null}
+      {name === "order" ? (
+        <>
+          <rect width="8" height="4" x="8" y="2" rx="1" />
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+          <path d="m9 14 2 2 4-4" />
+        </>
+      ) : null}
+      {name === "inv" ? (
+        <>
+          <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+          <path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8" />
+        </>
+      ) : null}
+      {name === "truck" ? (
+        <>
+          <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2M15 18H9" />
+          <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
+          <circle cx="17" cy="18" r="2" />
+          <circle cx="7" cy="18" r="2" />
+        </>
+      ) : null}
+      {name === "db" ? (
+        <>
+          <ellipse cx="12" cy="5" rx="9" ry="3" />
+          <path d="M3 5v14a9 3 0 0 0 18 0V5M3 12a9 3 0 0 0 18 0" />
+        </>
+      ) : null}
     </svg>
   );
 }
 
-function Stack() {
+function Tick() {
   return (
-    <svg viewBox="0 0 360 700" className="h-auto w-full" role="presentation">
-      <rect
-        x="8"
-        y="8"
-        width="344"
-        height="684"
-        fill="none"
-        stroke={line}
-        className="stroke-draw"
-        pathLength={1}
-      />
-      <text x="20" y="36" fill={secondary} fontSize="11">
-        INPUT
-      </text>
-      <Placed x={16} y={52} rot={-7} dx={4} dy={4} origin="74px 32px">
-        <Chat />
-      </Placed>
-      <Placed x={196} y={48} rot={6} dx={-4} dy={6} origin="66px 28px">
-        <Forwarded />
-      </Placed>
-      <Placed x={16} y={160} rot={4} dx={6} dy={-4} origin="78px 46px">
-        <Ledger />
-      </Placed>
-      <Placed x={190} y={176} rot={-5} dx={-4} dy={-6} origin="75px 29px">
-        <Voice />
-      </Placed>
-
-      <Flow d="M90 116 C 90 220, 180 280, 180 308" delay={0.06} />
-      <Flow d="M260 104 C 260 200, 200 270, 180 308" delay={0.14} />
-      <Flow d="M90 250 C 100 280, 150 300, 180 308" delay={0.2} />
-      <Flow d="M260 230 C 250 270, 210 300, 180 308" delay={0.26} />
-
-      <text x="20" y="292" fill={secondary} fontSize="11">
-        FORGE
-      </text>
-      <line x1="20" y1="312" x2="340" y2="312" stroke={line} />
-      <g style={{ transform: "translateX(calc(var(--p) * 250px))" }}>
-        <line x1="20" y1="312" x2="84" y2="312" stroke={accent} strokeWidth="1.5" />
-      </g>
-
-      <text x="20" y="348" fill={secondary} fontSize="11">
-        OUTPUT
-      </text>
-      <rect x="16" y="364" width="328" height="308" fill="#FFFFFF" stroke={line} />
-      <Record x={32} y={400} />
-      <Checks x={32} y={540} />
-    </svg>
+    <div className="diagram-tick">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m5 12 5 5L20 7" />
+      </svg>
+    </div>
   );
 }
 
-export function SignatureVisual({
-  mode,
-  className = "",
-  caption,
-}: {
-  mode: "loop" | "scrub";
-  className?: string;
-  caption: string;
-}) {
+export function SignatureVisual({ caption }: { caption: string }) {
   const ref = useRef<HTMLDivElement>(null);
+  const reduced = usePrefersReducedMotion();
+  const [active, setActive] = useState(-1);
+  const [pulse, setPulse] = useState(false);
+  const [done, setDone] = useState<[boolean, boolean, boolean, boolean]>([
+    false,
+    false,
+    false,
+    false,
+  ]);
+  const [travel, setTravel] = useState({ row: -1, right: false, gen: 0 });
 
   useEffect(() => {
+    if (reduced) return;
     const node = ref.current;
-    if (!node || mode !== "loop") return;
+    if (!node) return;
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
-      node.style.setProperty("--p", "1");
-      return;
-    }
-
-    let frame = 0;
+    let timers: number[] = [];
+    let index = 0;
     let running = false;
-    const started = performance.now() + 700;
-    const duration = 4600;
-    const hold = 900;
+    let onScreen = false;
+    let alive = true;
 
-    const tick = (now: number) => {
-      if (!running) return;
-      if (now < started) {
-        node.style.setProperty("--p", "0");
-      } else {
-        const elapsed = (now - started) % (duration + hold);
-        const t = Math.min(1, elapsed / duration);
-        node.style.setProperty("--p", easeForge(t).toFixed(4));
+    const clearTimers = () => {
+      for (const id of timers) window.clearTimeout(id);
+      timers = [];
+    };
+
+    const later = (fn: () => void, ms: number) => {
+      const id = window.setTimeout(() => {
+        if (!alive || !running) return;
+        fn();
+      }, ms);
+      timers.push(id);
+    };
+
+    const step = () => {
+      const current = index;
+      setActive(current);
+      setPulse(false);
+      setTravel((prev) => ({ row: current, right: false, gen: prev.gen + 1 }));
+
+      later(() => setPulse(true), 700);
+      later(() => {
+        setPulse(false);
+        setTravel((prev) => ({ ...prev, right: true }));
+      }, 1000);
+      later(() => {
+        setDone((prev) => {
+          if (prev[current]) return prev;
+          const next = [...prev] as [boolean, boolean, boolean, boolean];
+          next[current] = true;
+          return next;
+        });
+      }, 1800);
+
+      if (current >= rows.length - 1) {
+        later(() => {
+          setDone([false, false, false, false]);
+          index = 0;
+        }, 3600);
+        later(step, 4400);
+        return;
       }
-      frame = requestAnimationFrame(tick);
+
+      later(() => {
+        index = current + 1;
+        step();
+      }, 2200);
+    };
+
+    const start = () => {
+      if (running) return;
+      running = true;
+      step();
+    };
+
+    const stop = () => {
+      running = false;
+      clearTimers();
+      setPulse(false);
+    };
+
+    const sync = () => {
+      if (onScreen && !document.hidden) start();
+      else stop();
     };
 
     const observer = new IntersectionObserver(([entry]) => {
-      const visible = Boolean(entry?.isIntersecting);
-      if (visible && !running) {
-        running = true;
-        frame = requestAnimationFrame(tick);
-      }
-      if (!visible && running) {
-        running = false;
-        cancelAnimationFrame(frame);
-      }
+      onScreen = Boolean(entry?.isIntersecting);
+      sync();
     });
-
     observer.observe(node);
-
-    const onHide = () => {
-      if (document.hidden) {
-        running = false;
-        cancelAnimationFrame(frame);
-      } else if (node.getBoundingClientRect().bottom > 0) {
-        running = true;
-        frame = requestAnimationFrame(tick);
-      }
-    };
-    document.addEventListener("visibilitychange", onHide);
+    document.addEventListener("visibilitychange", sync);
 
     return () => {
+      alive = false;
       running = false;
-      cancelAnimationFrame(frame);
+      clearTimers();
       observer.disconnect();
-      document.removeEventListener("visibilitychange", onHide);
+      document.removeEventListener("visibilitychange", sync);
     };
-  }, [mode]);
+  }, [reduced]);
 
   return (
     <figure>
-      <div
-        ref={ref}
-        data-forge=""
-        className={`forge-visual ${className}`}
-        style={mode === "loop" ? ({ ["--p"]: 0 } as React.CSSProperties) : undefined}
-      >
-        <div className="hidden lg:block">
-          <Wide />
+      <div ref={ref} className="diagram">
+        <div aria-hidden="true">
+          <div className="diagram-heads">
+            <span>
+              <b>What you already have</b>
+            </span>
+            <span />
+            <span>
+              <b>AWXFORGE</b>
+            </span>
+            <span />
+            <span>
+              <b>What you get</b>
+            </span>
+          </div>
+          <div className="diagram-grid">
+            {rows.map((row, index) => {
+              const finished = reduced || done[index];
+              const on = !reduced && active === index;
+              const left = !reduced && travel.row === index;
+              const right = left && travel.right;
+              return (
+                <div key={row.input.title} className="contents">
+                  <div
+                    className={`diagram-card diagram-in${on ? " is-on" : ""}`}
+                    style={{ gridColumn: 1, gridRow: index + 1 }}
+                  >
+                    <div className="diagram-ic">
+                      <RowIcon name={row.input.icon} />
+                    </div>
+                    <div>
+                      <p className="diagram-title">{row.input.title}</p>
+                      <p>{row.input.detail}</p>
+                    </div>
+                  </div>
+                  <div
+                    className={`diagram-wire${left ? " is-go" : ""}`}
+                    style={{ gridColumn: 2, gridRow: index + 1 }}
+                  >
+                    <span key={left ? travel.gen : "off"} />
+                  </div>
+                  <div
+                    className={`diagram-wire${right ? " is-go" : ""}`}
+                    style={{ gridColumn: 4, gridRow: index + 1 }}
+                  >
+                    <span key={right ? travel.gen : "off"} />
+                  </div>
+                  <div
+                    className={`diagram-card diagram-out${finished ? " is-done" : ""}`}
+                    style={{ gridColumn: 5, gridRow: index + 1 }}
+                  >
+                    <div className="diagram-ic">
+                      <RowIcon name={row.output.icon} />
+                    </div>
+                    <div>
+                      <p className="diagram-title">{row.output.title}</p>
+                      <p>{row.output.detail}</p>
+                    </div>
+                    <Tick />
+                  </div>
+                </div>
+              );
+            })}
+            <div className={`diagram-forge${pulse ? " is-pulse" : ""}`}>
+              <div className="diagram-scan" />
+              <div className="diagram-mark">A</div>
+              <strong>AWXFORGE</strong>
+              <small>Reads, understands and finishes the task</small>
+            </div>
+          </div>
         </div>
-        <div className="lg:hidden">
-          <Stack />
-        </div>
+        <ol className="diagram-legend">
+          {legend.map((item) => (
+            <li key={item.n}>
+              <span>{item.n}</span>
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </li>
+          ))}
+        </ol>
       </div>
+      <p className="diagram-note">Sample content for illustration only.</p>
       <figcaption className="mt-4 font-mono text-[11px] tracking-[0.08em] text-secondary uppercase">
         {caption}
         <span className="sr-only">
-          . Scattered inputs pass through a scanning line and resolve into a structured record.
+          . A WhatsApp message asking for 40 brake pads by Friday becomes an order. A photo of a
+          handwritten bill for ₹18,400 becomes a recorded invoice. A voice note asking to send the
+          truck to Kochi becomes an assigned delivery. A paper ledger of stock counts becomes
+          updated stock. AWXFORGE reads each one and finishes the task.
         </span>
       </figcaption>
     </figure>

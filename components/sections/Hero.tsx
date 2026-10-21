@@ -30,7 +30,7 @@ export function Hero() {
           </Button>
         </div>
         <div className="mt-16 md:mt-24">
-          <SignatureVisual mode="loop" caption="Fig. 01" />
+          <SignatureVisual caption="Fig. 01" />
         </div>
       </Frame>
     </section>
