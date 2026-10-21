@@ -287,14 +287,13 @@ body {
 }
 
 .diagram-in.is-on {
-  border-color: var(--ink);
+  border-color: #c8c8c8;
   background: #fff;
-  transform: translateX(4px);
 }
 
 .diagram-in.is-on .diagram-ic {
-  color: var(--ink);
-  border-color: var(--ink);
+  color: var(--secondary);
+  border-color: #c8c8c8;
 }
 
 .diagram-out {
@@ -304,7 +303,7 @@ body {
 .diagram-out.is-done {
   opacity: 1;
   background: #fff;
-  border-color: var(--ink);
+  border-color: #c8c8c8;
 }
 
 .diagram-out.is-done .diagram-ic {
@@ -328,14 +327,14 @@ body {
 .diagram-tick svg {
   width: 12px;
   height: 12px;
-  stroke: #fff;
-  stroke-width: 2.4;
+  stroke: var(--secondary);
+  stroke-width: 2;
   opacity: 0;
 }
 
 .diagram-out.is-done .diagram-tick {
-  background: var(--ink);
-  border-color: var(--ink);
+  background: #fff;
+  border-color: #c8c8c8;
 }
 
 .diagram-out.is-done .diagram-tick svg {
@@ -391,8 +390,8 @@ body {
   width: 100%;
   margin: 0 auto;
   padding: 16px;
-  border: 1px solid var(--ink);
-  border-radius: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
   background: #fff;
   text-align: center;
 }
@@ -584,31 +583,10 @@ body {
   position: relative;
   display: grid;
   grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
-  border: 1px solid var(--ink);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
   background: #fff;
-}
-
-.agents-sheet::before,
-.agents-sheet::after {
-  content: "+";
-  position: absolute;
-  font:
-    12px var(--font-mono),
-    ui-monospace,
-    monospace;
-  color: var(--muted);
-  line-height: 1;
-  pointer-events: none;
-}
-
-.agents-sheet::before {
-  top: -14px;
-  left: -2px;
-}
-
-.agents-sheet::after {
-  right: -2px;
-  bottom: -14px;
 }
 
 .agents-rail {
@@ -616,7 +594,7 @@ body {
   flex-direction: column;
   gap: 10px;
   padding: 18px;
-  border-right: 1px solid var(--ink);
+  border-right: 1px solid var(--line);
   background: var(--surface);
 }
 
@@ -643,7 +621,7 @@ body {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 6px;
   background: #fff;
   color: var(--ink);
   font: inherit;
@@ -655,29 +633,9 @@ body {
     background-color 0.4s var(--ease);
 }
 
-.agents-mod::after {
-  content: "";
-  position: absolute;
-  top: 12px;
-  right: -8px;
-  bottom: 12px;
-  width: 8px;
-  background: repeating-linear-gradient(to bottom, var(--muted) 0 1px, transparent 1px 7px);
-  opacity: 0;
-  transition: opacity 0.4s var(--ease);
-}
-
-.agents-mod:hover {
-  border-color: var(--ink);
-}
-
+.agents-mod:hover,
 .agents-mod[aria-pressed="true"] {
-  border-color: var(--ink);
-  transform: translateX(6px);
-}
-
-.agents-mod[aria-pressed="true"]::after {
-  opacity: 1;
+  border-color: #c8c8c8;
 }
 
 .agents-mod.is-next {
@@ -691,7 +649,7 @@ body {
   width: 36px;
   height: 36px;
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 6px;
   background: #fff;
   transition:
     background-color 0.4s var(--ease),
@@ -734,7 +692,7 @@ body {
 
 .agents-slab {
   padding: 9px 12px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 13px;
   line-height: 1.35;
 }
@@ -746,13 +704,13 @@ body {
 
 .agents-slab.is-top {
   overflow: hidden;
-  border: 1.5px solid var(--accent);
-  background: rgb(255 79 0 / 0.05);
+  border: 1px solid var(--line);
+  background: #fff;
 }
 
 .agents-slab.is-base {
-  border: 1.5px solid var(--ink);
-  background: repeating-linear-gradient(45deg, #f5f5f5 0 6px, #fff 6px 12px);
+  border: 1px solid var(--line);
+  background: #fff;
 }
 
 .agents-slab-name {
@@ -777,7 +735,7 @@ body {
 
 .agents-conn i {
   width: 1px;
-  background: var(--ink);
+  background: var(--dim);
 }
 
 .agents-console {
@@ -997,15 +955,16 @@ body {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  border: 1px solid var(--ink);
-  border-radius: 4px;
-  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
   font-size: 14px;
   font-weight: 500;
 }
 
 .agents-chip.is-flag {
-  border-color: var(--accent);
+  border-color: var(--line);
+  background: #fff;
   color: var(--accent);
 }
 
@@ -1014,7 +973,7 @@ body {
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  border-radius: 4px;
+  border-radius: 6px;
   background: var(--ink);
   color: #fff;
   font-size: 14px;
@@ -1059,7 +1018,7 @@ body {
   .agents-rail {
     display: block;
     border-right: 0;
-    border-bottom: 1px solid var(--ink);
+    border-bottom: 1px solid var(--line);
   }
 
   .agents-list {
@@ -1072,11 +1031,6 @@ body {
     padding: 8px;
   }
 
-  .agents-mod[aria-pressed="true"] {
-    transform: none;
-  }
-
-  .agents-mod::after,
   .agents-ref,
   .agents-stack {
     display: none;
@@ -1171,7 +1125,7 @@ body {
   .diagram-out {
     opacity: 1;
     background: #fff;
-    border-color: var(--ink);
+    border-color: var(--dim);
   }
 
   .diagram-out .diagram-ic {
@@ -1181,11 +1135,12 @@ body {
   }
 
   .diagram-out .diagram-tick {
-    background: var(--ink);
-    border-color: var(--ink);
+    background: #fff;
+    border-color: var(--dim);
   }
 
   .diagram-out .diagram-tick svg {
+    stroke: var(--secondary);
     opacity: 1;
   }
 
