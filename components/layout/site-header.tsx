@@ -1,8 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { AwxLockup } from "@/components/brand/awx-lockup";
 import { Button } from "@/components/ui/Button";
-import { Wordmark } from "@/components/ui/Wordmark";
+import { resolveHeaderAnimate } from "@/lib/intro-state";
+
+function subscribeToIntro(onChange: () => void) {
+  window.addEventListener("awx:intro-complete", onChange);
+  return () => window.removeEventListener("awx:intro-complete", onChange);
+}
+
+function headerMarkSnapshot() {
+  if (document.documentElement.dataset.intro !== "done") return "pending" as const;
+  return resolveHeaderAnimate();
+}
 
 const links = [
   { href: "#philosophy", label: "Philosophy" },
@@ -10,11 +21,17 @@ const links = [
   { href: "#contact", label: "Contact" },
 ];
 
-export function Nav() {
+export function SiteHeader() {
   const header = useRef<HTMLElement>(null);
   const readout = useRef<HTMLSpanElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
+  const markChoice = useSyncExternalStore(
+    subscribeToIntro,
+    headerMarkSnapshot,
+    () => "pending" as const,
+  );
+  const mark = markChoice === "once" ? "once" : "none";
 
   useEffect(() => {
     const node = header.current;
@@ -57,8 +74,13 @@ export function Nav() {
   return (
     <header ref={header} className="nav fixed inset-x-0 top-0 z-40">
       <div className="mx-auto flex h-16 w-[min(1440px,calc(100%-48px))] items-center justify-between gap-4">
-        <a href="#main" className="text-ink" aria-label="AWXFORGE">
-          <Wordmark />
+        <a
+          href="#main"
+          className="inline-flex min-h-11 items-center text-ink"
+          aria-label="AWXFORGE"
+          data-awx-lockup
+        >
+          <AwxLockup animate={mark} speed={1.8} />
         </a>
 
         <nav aria-label="Primary" className="flex items-center gap-8">

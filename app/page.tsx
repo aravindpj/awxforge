@@ -6,14 +6,12 @@ import { Hero } from "@/components/sections/Hero";
 import { Introducing } from "@/components/sections/Introducing";
 import { Method } from "@/components/sections/Method";
 import { Mission } from "@/components/sections/Mission";
-import { Nav } from "@/components/sections/Nav";
 import { Philosophy } from "@/components/sections/Philosophy";
 import { Problem } from "@/components/sections/Problem";
 
 export default function Page() {
   return (
     <>
-      <Nav />
       <main id="main" tabIndex={-1} className="outline-none">
         <Hero />
         <Problem />

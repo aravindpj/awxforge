@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useIntroDone } from "@/components/providers/IntroProvider";
 import { usePrefersReducedMotion } from "@/lib/motion";
 
 type IconName = "cart" | "ship" | "ruler" | "plus" | "chk" | "flag" | "arr";
@@ -136,6 +137,7 @@ function Icon({ name, className = "agents-icon" }: { name: IconName; className?:
 
 export function IntroFigure() {
   const reduced = usePrefersReducedMotion();
+  const introDone = useIntroDone();
   const [index, setIndex] = useState(0);
   const [run, setRun] = useState(0);
   const [stepStates, setStepStates] = useState<StepState[]>(() =>
@@ -157,6 +159,7 @@ export function IntroFigure() {
   const industry = agent.name === "Your industry" ? "Your industry (next)" : agent.name;
 
   useEffect(() => {
+    if (!introDone) return;
     const root = rootRef.current;
     if (!root) return;
 
@@ -231,10 +234,14 @@ export function IntroFigure() {
       });
 
       const end = 520 + count * 1100 + 280;
-      later(() => {
-        setShowResult(true);
-        settled = true;
-      }, end, gen);
+      later(
+        () => {
+          setShowResult(true);
+          settled = true;
+        },
+        end,
+        gen,
+      );
 
       const queue = (delay: number) => {
         const id = window.setTimeout(() => {
@@ -292,7 +299,7 @@ export function IntroFigure() {
       observer.disconnect();
       document.removeEventListener("visibilitychange", sync);
     };
-  }, [reduced]);
+  }, [introDone, reduced]);
 
   const choose = (next: number) => {
     autoRef.current = false;

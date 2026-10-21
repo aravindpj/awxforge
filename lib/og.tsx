@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { fullMark } from "@/lib/brand/mark-paths.generated";
 
 export const ogSize = { width: 1200, height: 630 };
 export const ogContentType = "image/png";
@@ -12,29 +13,38 @@ export function OgImage() {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between",
-        background: "#FFFFFF",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#FFFFFF",
+        backgroundImage:
+          "linear-gradient(#E8E8E8 1px, transparent 1px), linear-gradient(90deg, #E8E8E8 1px, transparent 1px)",
+        backgroundSize: "64px 64px",
         color: "#0A0A0A",
-        padding: "72px",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <div style={{ width: 18, height: 18, background: "#FF4F00" }} />
-        <div style={{ fontSize: 22, letterSpacing: 4 }}>AWXFORGE</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
+        <svg width="300" height="122" viewBox="0 0 250 102">
+          <path d={fullMark.orange} fill="#FF4F00" />
+          <path
+            d={fullMark.ink}
+            fill="#0A0A0A"
+            stroke="#FFFFFF"
+            strokeWidth="5"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <div style={{ fontSize: 78, fontWeight: 600, letterSpacing: 1, lineHeight: 1 }}>FORGE</div>
       </div>
       <div
         style={{
           display: "flex",
-          fontSize: 64,
-          lineHeight: 1.05,
-          letterSpacing: -2,
-          maxWidth: 920,
+          marginTop: 28,
+          fontSize: 18,
+          letterSpacing: 4,
+          color: "#9A9A9A",
         }}
       >
-        The future of business software shouldn’t mean more complexity.
-      </div>
-      <div style={{ display: "flex", fontSize: 22, color: "#5C5C5C" }}>
-        Forging better ways to work
+        FORGING BETTER WAYS TO WORK
       </div>
     </div>,
     { ...ogSize },

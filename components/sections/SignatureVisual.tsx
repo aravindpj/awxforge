@@ -12,6 +12,8 @@ import {
   Truck,
   type LucideIcon,
 } from "lucide-react";
+import { AwxMark } from "@/components/brand/awx-mark";
+import { useIntroDone } from "@/components/providers/IntroProvider";
 import { usePrefersReducedMotion } from "@/lib/motion";
 
 type IconName = "chat" | "cam" | "mic" | "book" | "order" | "inv" | "truck" | "db";
@@ -190,6 +192,7 @@ const lanes: {
 
 function MobileLane() {
   const reduced = usePrefersReducedMotion();
+  const introDone = useIntroDone();
   const [index, setIndex] = useState(0);
   const [cycle, setCycle] = useState(0);
   const [ready, setReady] = useState(false);
@@ -202,6 +205,7 @@ function MobileLane() {
   const OutputIcon = lane.outputIcon;
 
   useEffect(() => {
+    if (!introDone) return;
     const root = rootRef.current;
     if (!root) return;
 
@@ -273,7 +277,7 @@ function MobileLane() {
       narrow.removeEventListener("change", sync);
       document.removeEventListener("visibilitychange", sync);
     };
-  }, [reduced]);
+  }, [introDone, reduced]);
 
   const choose = (next: number) => {
     autoRef.current = false;
@@ -385,6 +389,7 @@ function Tick() {
 export function SignatureVisual({ caption }: { caption: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
+  const introDone = useIntroDone();
   const [active, setActive] = useState(-1);
   const [pulse, setPulse] = useState(false);
   const [done, setDone] = useState<[boolean, boolean, boolean, boolean]>([
@@ -396,7 +401,7 @@ export function SignatureVisual({ caption }: { caption: string }) {
   const [travel, setTravel] = useState({ row: -1, right: false, gen: 0 });
 
   useEffect(() => {
-    if (reduced) return;
+    if (reduced || !introDone) return;
     const node = ref.current;
     if (!node) return;
 
@@ -485,7 +490,7 @@ export function SignatureVisual({ caption }: { caption: string }) {
       observer.disconnect();
       document.removeEventListener("visibilitychange", sync);
     };
-  }, [reduced]);
+  }, [introDone, reduced]);
 
   return (
     <figure>
@@ -554,7 +559,9 @@ export function SignatureVisual({ caption }: { caption: string }) {
             })}
             <div className={`diagram-forge${pulse ? " is-pulse" : ""}`}>
               <div className="diagram-scan" />
-              <div className="diagram-mark">A</div>
+              <div className="diagram-mark">
+                <AwxMark variant="full" tight animate="none" />
+              </div>
               <strong>AWXFORGE</strong>
               <small>Reads, understands and finishes the task</small>
             </div>

@@ -1,10 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SiteHeader } from "@/components/layout/site-header";
+import { Preloader } from "@/components/layout/preloader";
+import { IntroProvider } from "@/components/providers/IntroProvider";
 import { Cursor } from "@/components/ui/Cursor";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
+import { introBootScript } from "@/lib/intro-state";
 import { site } from "@/lib/tokens";
 import "./globals.css";
+import "./awx.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,20 +63,34 @@ const jsonLd = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
       <body className="min-h-svh bg-bg font-sans text-ink">
+        <script dangerouslySetInnerHTML={{ __html: introBootScript }} />
+        <noscript>
+          <style>{`#preloader{display:none !important}`}</style>
+        </noscript>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <SmoothScroll>
-          <ScrollProgress />
-          <Cursor />
-          <a href="#main" className="skip-link">
-            Skip to content
-          </a>
-          {children}
-        </SmoothScroll>
+        <IntroProvider>
+          <Preloader />
+          <div id="site-shell">
+            <SmoothScroll>
+              <ScrollProgress />
+              <Cursor />
+              <a href="#main" className="skip-link">
+                Skip to content
+              </a>
+              <SiteHeader />
+              {children}
+            </SmoothScroll>
+          </div>
+        </IntroProvider>
       </body>
     </html>
   );
