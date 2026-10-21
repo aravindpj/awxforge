@@ -1,399 +1,471 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePrefersReducedMotion } from "@/lib/motion";
 
-type IconName =
-  | "chat"
-  | "cam"
-  | "mic"
-  | "pkg"
-  | "hash"
-  | "cal"
-  | "pin"
-  | "rup"
-  | "chk"
-  | "ord"
-  | "inbox"
-  | "filt"
-  | "done"
-  | "redo";
+type IconName = "cart" | "ship" | "ruler" | "plus" | "chk" | "flag" | "arr";
+type StepState = "idle" | "run" | "done" | "flag";
 
-type Phase = "chaos" | "sort" | "done";
-
-const pieces: {
+type Step = {
+  code: string;
   text: string;
-  slot: number;
-  x: number;
-  y: number;
-  rot: number;
+  flag?: boolean;
+};
+
+type Agent = {
+  ref: string;
+  name: string;
+  subtitle: string;
   icon: IconName;
-}[] = [
-  { text: "brake pads", slot: 0, x: 0.05, y: 0.12, rot: -7, icon: "chat" },
-  { text: "40", slot: 1, x: 0.3, y: 0.62, rot: 9, icon: "mic" },
-  { text: "Friday", slot: 2, x: 0.08, y: 0.74, rot: -5, icon: "chat" },
-  { text: "Kochi shop", slot: 3, x: 0.14, y: 0.34, rot: 6, icon: "mic" },
-  { text: "₹18,400", slot: 4, x: 0.2, y: 0.9, rot: -9, icon: "cam" },
-  { text: "hi bhai", slot: -1, x: 0.62, y: 0.05, rot: 8, icon: "chat" },
-  { text: "ok ok", slot: -1, x: 0.04, y: 0.52, rot: -10, icon: "chat" },
-  { text: "pls fast", slot: -1, x: 0.5, y: 0.45, rot: 5, icon: "chat" },
-  { text: "??", slot: -1, x: 0.82, y: 0.85, rot: -6, icon: "chat" },
-  { text: "thanks", slot: -1, x: 0.58, y: 0.9, rot: 7, icon: "chat" },
-  { text: "call me", slot: -1, x: 0.34, y: 0.06, rot: -4, icon: "mic" },
+  title: string;
+  problem: string;
+  steps: Step[];
+  results?: readonly [string, string];
+  cta?: boolean;
+};
+
+const agents: Agent[] = [
+  {
+    ref: "U1",
+    name: "FMCG",
+    subtitle: "Consumer goods",
+    icon: "cart",
+    title: "Distribution agent",
+    problem:
+      "Retailer orders arrive by phone, WhatsApp and sheets, and stock is always a step behind.",
+    steps: [
+      { code: "READ", text: "Reads every retailer order, whatever format it arrives in" },
+      { code: "MATCH", text: "Matches items to the right SKU and pack size" },
+      { code: "CHECK", text: "Checks stock, batches and expiry dates" },
+      { code: "DRAFT", text: "Drafts the dispatch plan by route" },
+      {
+        code: "FLAG",
+        text: "Flags an item that will run short before the next delivery",
+        flag: true,
+      },
+    ],
+    results: ["Dispatch plan ready", "1 shortage flagged"],
+  },
+  {
+    ref: "U2",
+    name: "Auto parts",
+    subtitle: "Export and import",
+    icon: "ship",
+    title: "Trade desk agent",
+    problem:
+      "Thousands of part numbers, supplier quotes and shipping papers, all in different formats.",
+    steps: [
+      { code: "READ", text: "Reads supplier quotes, part lists and packing notes" },
+      { code: "MATCH", text: "Matches part numbers across brands and cross-references" },
+      { code: "CHECK", text: "Checks tariff codes and the papers each country needs" },
+      { code: "DRAFT", text: "Drafts the invoice and packing list" },
+      { code: "FLAG", text: "Flags a missing document before the shipment leaves", flag: true },
+    ],
+    results: ["Shipment pack ready", "1 document flagged"],
+  },
+  {
+    ref: "U3",
+    name: "Interiors",
+    subtitle: "Construction interiors",
+    icon: "ruler",
+    title: "Site agent",
+    problem:
+      "Site changes, material orders and client approvals are scattered across chats and photos.",
+    steps: [
+      { code: "READ", text: "Reads site photos, measurements and chat updates" },
+      { code: "MATCH", text: "Updates the quantities list to match what changed" },
+      { code: "CHECK", text: "Checks material orders against the work schedule" },
+      { code: "DRAFT", text: "Drafts the change request for client approval" },
+      { code: "FLAG", text: "Flags a delivery that will hold up the next trade", flag: true },
+    ],
+    results: ["Change request drafted", "1 delay flagged"],
+  },
+  {
+    ref: "U4",
+    name: "Your industry",
+    subtitle: "Coming next",
+    icon: "plus",
+    title: "The next agent",
+    problem:
+      "Every business has a workflow that fights back. We add new industries by building each agent alongside the people who run it.",
+    steps: [
+      { code: "LISTEN", text: "Sit with your team and watch the real workflow" },
+      { code: "MAP", text: "Find the step that costs the most time" },
+      { code: "TEACH", text: "Give the agent your industry’s own rules" },
+      { code: "REFINE", text: "Improve it with your feedback, week by week" },
+    ],
+    cta: true,
+  },
 ];
 
-const rows: { label: string; icon: IconName; delay: string }[] = [
-  { label: "Item", icon: "pkg", delay: "0.3s" },
-  { label: "Quantity", icon: "hash", delay: "0.45s" },
-  { label: "Due", icon: "cal", delay: "0.6s" },
-  { label: "Deliver to", icon: "pin", delay: "0.75s" },
-  { label: "Amount", icon: "rup", delay: "0.9s" },
-];
-
-const steps: { n: string; label: string; icon: IconName }[] = [
-  { n: "1", label: "Messages arrive messy", icon: "inbox" },
-  { n: "2", label: "AWXFORGE picks out what matters", icon: "filt" },
-  { n: "3", label: "The order is ready", icon: "done" },
-];
-
-function Icon({
-  name,
-  className = "fig2-icon",
-  style,
-}: {
-  name: IconName;
-  className?: string;
-  style?: React.CSSProperties;
-}) {
+function Icon({ name, className = "agents-icon" }: { name: IconName; className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} style={style} aria-hidden="true">
-      {name === "chat" ? <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /> : null}
-      {name === "cam" ? (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      {name === "cart" ? (
         <>
-          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z" />
-          <circle cx="12" cy="13" r="3" />
+          <circle cx="8" cy="21" r="1" />
+          <circle cx="19" cy="21" r="1" />
+          <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
         </>
       ) : null}
-      {name === "mic" ? (
+      {name === "ship" ? (
         <>
-          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" />
+          <path d="M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+          <path d="M19.38 20A11.6 11.6 0 0 0 21 14l-9-4-9 4c0 2.9.94 5.34 2.81 7.76" />
+          <path d="M19 13V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6M12 10v4M12 2v3" />
         </>
       ) : null}
-      {name === "pkg" ? (
+      {name === "ruler" ? (
         <>
-          <path d="m7.5 4.27 9 5.15" />
-          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-          <path d="m3.3 7 8.7 5 8.7-5M12 22V12" />
+          <path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z" />
+          <path d="m14.5 12.5 2-2M11.5 9.5l2-2M8.5 6.5l2-2M17.5 15.5l2-2" />
         </>
       ) : null}
-      {name === "hash" ? <path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18" /> : null}
-      {name === "cal" ? (
-        <>
-          <path d="M8 2v4M16 2v4" />
-          <rect width="18" height="18" x="3" y="4" rx="2" />
-          <path d="M3 10h18" />
-        </>
-      ) : null}
-      {name === "pin" ? (
-        <>
-          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-          <circle cx="12" cy="10" r="3" />
-        </>
-      ) : null}
-      {name === "rup" ? (
-        <>
-          <path d="M6 3h12M6 8h12M6 13l8.5 8M6 13h3" />
-          <path d="M9 13c6.667 0 6.667-10 0-10" />
-        </>
-      ) : null}
+      {name === "plus" ? <path d="M5 12h14M12 5v14" /> : null}
       {name === "chk" ? <path d="m5 12 5 5L20 7" /> : null}
-      {name === "ord" ? (
+      {name === "flag" ? (
         <>
-          <rect width="8" height="4" x="8" y="2" rx="1" />
-          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-          <path d="m9 14 2 2 4-4" />
+          <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+          <path d="M4 22v-7" />
         </>
       ) : null}
-      {name === "inbox" ? (
-        <>
-          <path d="M22 12h-6l-2 3h-4l-2-3H2" />
-          <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
-        </>
-      ) : null}
-      {name === "filt" ? <path d="M22 3H2l8 9.46V19l4 2v-8.54z" /> : null}
-      {name === "done" ? (
-        <>
-          <circle cx="12" cy="12" r="10" />
-          <path d="m9 12 2 2 4-4" />
-        </>
-      ) : null}
-      {name === "redo" ? (
-        <>
-          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-          <path d="M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M8 16H3v5" />
-        </>
-      ) : null}
+      {name === "arr" ? <path d="M5 12h14M13 6l6 6-6 6" /> : null}
     </svg>
   );
 }
 
 export function IntroFigure() {
   const reduced = usePrefersReducedMotion();
-  const [phase, setPhase] = useState<Phase>("chaos");
-  const [override, setOverride] = useState<Phase | null>(null);
-  const shown: Phase = reduced ? (override ?? "done") : phase;
-  const stageRef = useRef<HTMLDivElement>(null);
-  const scanRef = useRef<HTMLDivElement>(null);
-  const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const fragRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const phaseRef = useRef<Phase>("chaos");
-  const runRef = useRef<() => void>(() => {});
+  const [index, setIndex] = useState(0);
+  const [run, setRun] = useState(0);
+  const [stepStates, setStepStates] = useState<StepState[]>(() =>
+    agents[0].steps.map(() => "idle"),
+  );
+  const [showResult, setShowResult] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [playing, setPlaying] = useState(!reduced);
 
-  const place = useCallback((next: Phase) => {
-    const stage = stageRef.current;
-    if (!stage || stage.clientWidth === 0) return;
-    const stageRect = stage.getBoundingClientRect();
-    const width = stage.clientWidth;
-    const height = stage.clientHeight;
+  const rootRef = useRef<HTMLDivElement>(null);
+  const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const playRef = useRef<(next: number) => void>(() => {});
+  const autoRef = useRef(!reduced);
+  const holdRef = useRef(false);
+  const indexRef = useRef(0);
+  const onScreenRef = useRef(false);
 
-    pieces.forEach((piece, index) => {
-      const el = fragRefs.current[index];
-      if (!el) return;
-      const kept = piece.slot >= 0;
-      el.style.transitionDelay = next === "sort" && kept ? `${index * 110}ms` : "0ms";
-      if (next !== "chaos" && kept) {
-        const slot = slotRefs.current[piece.slot];
-        if (!slot) return;
-        const slotRect = slot.getBoundingClientRect();
-        const x = slotRect.left - stageRect.left;
-        const y = slotRect.top - stageRect.top + (slotRect.height - el.offsetHeight) / 2;
-        el.style.transform = `translate(${x}px, ${y}px) rotate(0deg)`;
-        return;
-      }
-      const x = piece.x * (width - el.offsetWidth);
-      const y = piece.y * (height - el.offsetHeight);
-      const scale = next !== "chaos" ? " scale(0.7)" : "";
-      el.style.transform = `translate(${x}px, ${y}px) rotate(${piece.rot}deg)${scale}`;
-    });
-    stage.classList.add("is-ready");
-  }, []);
-
-  useLayoutEffect(() => {
-    phaseRef.current = shown;
-    place(shown);
-    const scan = scanRef.current;
-    if (!scan) return;
-    if (shown === "sort" && !reduced) {
-      scan.classList.remove("is-run");
-      void scan.offsetWidth;
-      scan.classList.add("is-run");
-    } else {
-      scan.classList.remove("is-run");
-    }
-  }, [shown, place, reduced]);
+  const agent = agents[index];
+  const industry = agent.name === "Your industry" ? "Your industry (next)" : agent.name;
 
   useEffect(() => {
-    const stage = stageRef.current;
-    if (!stage) return;
-    const observer = new ResizeObserver(() => {
-      fragRefs.current.forEach((el) => {
-        if (el) el.style.transition = "none";
-      });
-      place(phaseRef.current);
-      requestAnimationFrame(() => {
-        fragRefs.current.forEach((el) => {
-          if (el) el.style.transition = "";
-        });
-      });
-    });
-    observer.observe(stage);
-    return () => observer.disconnect();
-  }, [place]);
+    const root = rootRef.current;
+    if (!root) return;
 
-  useEffect(() => {
-    let cancel = false;
-    const ready = document.fonts?.ready ?? Promise.resolve();
-    ready.then(() => {
-      if (!cancel) place(phaseRef.current);
-    });
-    return () => {
-      cancel = true;
-    };
-  }, [place]);
-
-  useEffect(() => {
-    if (reduced) return;
-    const node = stageRef.current;
-    if (!node) return;
-
-    let timers: number[] = [];
-    let running = false;
-    let onScreen = false;
     let alive = true;
+    let generation = 0;
+    let running = false;
+    let settled = false;
+    const timers: number[] = [];
 
     const clear = () => {
-      for (const id of timers) window.clearTimeout(id);
-      timers = [];
+      while (timers.length) window.clearTimeout(timers.pop());
     };
 
-    const later = (fn: () => void, ms: number) => {
+    const later = (fn: () => void, ms: number, gen: number) => {
       const id = window.setTimeout(() => {
-        if (!alive || !running) return;
+        if (!alive || gen !== generation) return;
         fn();
       }, ms);
       timers.push(id);
     };
 
-    const run = () => {
-      clear();
+    const play = (next: number) => {
+      const gen = ++generation;
       running = true;
-      setPhase("chaos");
-      later(() => setPhase("sort"), 2200);
-      later(() => setPhase("done"), 4400);
-      later(run, 9200);
+      settled = false;
+      clear();
+      indexRef.current = next;
+      setIndex(next);
+      setRun((value) => value + 1);
+
+      const current = agents[next];
+      const count = current.steps.length;
+
+      if (reduced) {
+        setStepStates(current.steps.map((step) => (step.flag ? "flag" : "done")));
+        setShowResult(true);
+        setProgress(100);
+        settled = true;
+        return;
+      }
+
+      setStepStates(current.steps.map(() => "idle"));
+      setShowResult(false);
+      setProgress(0);
+
+      current.steps.forEach((step, stepIndex) => {
+        later(
+          () => {
+            setStepStates((prev) => {
+              if (prev.length !== count) return prev;
+              const copy = [...prev];
+              copy[stepIndex] = "run";
+              return copy;
+            });
+          },
+          520 + stepIndex * 1100,
+          gen,
+        );
+        later(
+          () => {
+            setStepStates((prev) => {
+              if (prev.length !== count) return prev;
+              const copy = [...prev];
+              copy[stepIndex] = step.flag ? "flag" : "done";
+              return copy;
+            });
+            setProgress(((stepIndex + 1) / count) * 100);
+          },
+          520 + stepIndex * 1100 + 780,
+          gen,
+        );
+      });
+
+      const end = 520 + count * 1100 + 280;
+      later(() => {
+        setShowResult(true);
+        settled = true;
+      }, end, gen);
+
+      const queue = (delay: number) => {
+        const id = window.setTimeout(() => {
+          if (!alive || gen !== generation || !autoRef.current) return;
+          if (document.hidden || !onScreenRef.current || holdRef.current) {
+            queue(480);
+            return;
+          }
+          play((next + 1) % agents.length);
+        }, delay);
+        timers.push(id);
+      };
+
+      queue(end + 4200);
     };
 
-    runRef.current = () => {
-      if (!alive) return;
-      run();
-    };
+    playRef.current = play;
+
+    if (reduced) {
+      play(indexRef.current);
+      return () => {
+        alive = false;
+        clear();
+      };
+    }
 
     const sync = () => {
-      if (onScreen && !document.hidden) {
-        if (!running) run();
-      } else {
-        running = false;
-        clear();
+      if (!alive) return;
+      const visible = onScreenRef.current && !document.hidden;
+      if (visible) {
+        if (!running && !settled) play(indexRef.current);
+        return;
       }
+      if (settled) return;
+      running = false;
+      generation += 1;
+      clear();
     };
 
-    const observer = new IntersectionObserver(([entry]) => {
-      onScreen = Boolean(entry?.isIntersecting);
-      sync();
-    });
-    observer.observe(node);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        onScreenRef.current = Boolean(entry?.isIntersecting);
+        sync();
+      },
+      { threshold: 0.32 },
+    );
+
+    observer.observe(root);
     document.addEventListener("visibilitychange", sync);
 
     return () => {
       alive = false;
-      running = false;
+      generation += 1;
       clear();
       observer.disconnect();
       document.removeEventListener("visibilitychange", sync);
     };
   }, [reduced]);
 
-  const stepIndex = shown === "chaos" ? 0 : shown === "sort" ? 1 : 2;
+  const choose = (next: number) => {
+    autoRef.current = false;
+    setPlaying(false);
+    playRef.current(next);
+  };
+
+  const toggleTour = () => {
+    if (autoRef.current) {
+      autoRef.current = false;
+      setPlaying(false);
+      return;
+    }
+    autoRef.current = true;
+    setPlaying(true);
+    playRef.current(indexRef.current);
+  };
+
+  const onRailKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (
+      event.key !== "ArrowDown" &&
+      event.key !== "ArrowUp" &&
+      event.key !== "ArrowRight" &&
+      event.key !== "ArrowLeft"
+    ) {
+      return;
+    }
+    event.preventDefault();
+    const direction = event.key === "ArrowDown" || event.key === "ArrowRight" ? 1 : -1;
+    const next = (indexRef.current + direction + agents.length) % agents.length;
+    choose(next);
+    buttonRefs.current[next]?.focus();
+  };
 
   return (
-    <div>
-      <p className="fig2-src">
-        Arriving from{" "}
-        <span>
-          <Icon name="chat" />
-          WhatsApp
-        </span>
-        <span>
-          <Icon name="cam" />
-          Photos
-        </span>
-        <span>
-          <Icon name="mic" />
-          Voice notes
-        </span>
-      </p>
-      <div
-        ref={stageRef}
-        className="fig2-stage"
-        data-p={shown}
-        role="img"
-        aria-label="Scattered message fragments sort themselves into a tidy order record"
-      >
-        <div className="fig2-card">
-          <div className="fig2-head">
-            <span className="fig2-ttl">
-              <span className="fig2-mk">
-                <Icon name="ord" />
-              </span>
-              Order <span className="fig2-id">#1042</span>
-            </span>
-            <span className="fig2-status">
-              <span className="fig2-dot" />
-              <span className="w">Waiting</span>
-              <span className="d">Created</span>
-            </span>
-          </div>
-          <div className="fig2-rows">
-            {rows.map((row, index) => (
-              <div className="fig2-row" key={row.label}>
-                <span className="fig2-lb">
-                  <Icon name={row.icon} />
-                  {row.label}
+    <figure
+      ref={rootRef}
+      className="agents"
+      onPointerEnter={() => {
+        holdRef.current = true;
+      }}
+      onPointerLeave={() => {
+        holdRef.current = false;
+      }}
+      onFocus={() => {
+        holdRef.current = true;
+      }}
+      onBlur={(event) => {
+        const next = event.relatedTarget;
+        if (next instanceof Node && event.currentTarget.contains(next)) return;
+        holdRef.current = false;
+      }}
+    >
+      <div className="agents-sheet">
+        <div className="agents-rail">
+          <p className="agents-kicker">Specialist agents</p>
+          <div
+            className="agents-list"
+            role="group"
+            aria-label="Specialist agents"
+            onKeyDown={onRailKeyDown}
+          >
+            {agents.map((item, itemIndex) => (
+              <button
+                key={item.ref}
+                ref={(node) => {
+                  buttonRefs.current[itemIndex] = node;
+                }}
+                type="button"
+                className={`agents-mod${item.cta ? " is-next" : ""}`}
+                aria-pressed={itemIndex === index}
+                aria-controls="agent-console"
+                onClick={() => choose(itemIndex)}
+              >
+                <span className="agents-ic">
+                  <Icon name={item.icon} />
                 </span>
-                <div
-                  className="fig2-slot"
-                  ref={(el) => {
-                    slotRefs.current[index] = el;
-                  }}
-                />
-                <Icon name="chk" className="fig2-icon fig2-chk" style={{ transitionDelay: row.delay }} />
-              </div>
+                <span>
+                  <b>{item.name}</b>
+                  <small>{item.subtitle}</small>
+                </span>
+                <span className="agents-ref">{item.ref}</span>
+              </button>
             ))}
           </div>
-          <div className="fig2-foot">
-            <Icon name="done" />
-            Filled in automatically. Nothing typed.
+          <div className="agents-stack" aria-hidden="true">
+            <div className="agents-slab is-top">
+              <span className="agents-kicker">Industry knowledge</span>
+              <span key={run} className="agents-slab-name">
+                {industry}
+              </span>
+            </div>
+            <div className="agents-conn">
+              <i />
+              <i />
+              <i />
+              <i />
+            </div>
+            <div className="agents-slab is-base">
+              <span className="agents-kicker">AWXFORGE core</span>
+              read · understand · act
+            </div>
           </div>
         </div>
-        <div ref={scanRef} className="fig2-scan" />
-        {pieces.map((piece, index) => {
-          const kept = piece.slot >= 0;
-          const placed = kept && shown !== "chaos";
-          const gone = !kept && shown !== "chaos";
-          return (
+
+        <div className="agents-console" id="agent-console">
+          <div key={`bar-${run}`} className="agents-prog" style={{ width: `${progress}%` }} />
+          <div className="agents-top">
+            <span className={`agents-live${playing ? "" : " is-paused"}`}>
+              <i />
+              Agent online
+            </span>
+            <span className="agents-top-side">
+              {reduced ? null : (
+                <button
+                  type="button"
+                  className="agents-pause"
+                  aria-label={playing ? "Pause the tour" : "Play the tour"}
+                  onClick={toggleTour}
+                >
+                  {playing ? "Pause" : "Play"}
+                </button>
+              )}
+              <span className="agents-kicker">Illustrative workflow</span>
+            </span>
+          </div>
+
+          <div key={run} className={`agents-panel${run > 0 && !reduced ? " is-enter" : ""}`}>
+            <h3>{agent.title}</h3>
+            <p className="agents-prob">{agent.problem}</p>
+            <ol className="agents-steps">
+              {agent.steps.map((step, stepIndex) => {
+                const state = stepStates[stepIndex] ?? "idle";
+                return (
+                  <li key={step.code} data-state={state}>
+                    <span className="agents-code">{step.code}</span>
+                    <span>{step.text}</span>
+                    <span className="agents-st" aria-hidden="true">
+                      <i className="agents-sp" />
+                      <Icon name="chk" className="agents-mark agents-ck" />
+                      <Icon name="flag" className="agents-mark agents-fl" />
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
             <div
-              key={piece.text}
-              ref={(el) => {
-                fragRefs.current[index] = el;
-              }}
-              className={`fig2-f${kept ? " is-ok" : " is-noise"}${placed ? " is-placed" : ""}${gone ? " is-gone" : ""}`}
+              className={`agents-res${showResult ? " is-show" : ""}`}
+              aria-live={playing ? "off" : "polite"}
             >
-              <Icon name={piece.icon} />
-              <span style={{ animationDelay: `${index * -0.37}s` }}>{piece.text}</span>
+              {showResult ? (
+                agent.cta ? (
+                  <a className="agents-cta" href="#contact">
+                    Tell us about your workflow
+                    <Icon name="arr" />
+                  </a>
+                ) : (
+                  agent.results?.map((label, resultIndex) => (
+                    <span key={label} className={`agents-chip${resultIndex ? " is-flag" : ""}`}>
+                      <Icon name={resultIndex ? "flag" : "chk"} />
+                      {label}
+                    </span>
+                  ))
+                )
+              ) : null}
             </div>
-          );
-        })}
+          </div>
+        </div>
       </div>
-      <ol className="fig2-steps">
-        {steps.map((step, index) => (
-          <li
-            key={step.n}
-            className={`${index <= stepIndex ? "is-on" : ""}${index === stepIndex ? " is-cur" : ""}`}
-          >
-            <Icon name={step.icon} className="fig2-icon fig2-si" />
-            <b>{step.n}</b>
-            {step.label}
-          </li>
-        ))}
-      </ol>
-      <div className="fig2-bar">
-        <p className="fig2-caption">FIG. 02 — From noise to record</p>
-        <button
-          type="button"
-          className="fig2-replay"
-          onClick={() => {
-            if (reduced) {
-              setOverride((current) => ((current ?? "done") === "done" ? "chaos" : "done"));
-              return;
-            }
-            runRef.current();
-          }}
-        >
-          <Icon name="redo" />
-          Replay
-        </button>
-      </div>
-    </div>
+      <figcaption className="agents-foot">
+        <span>Fig. 02 — One core, many specialists</span>
+        <span>New industries added as we learn them</span>
+      </figcaption>
+    </figure>
   );
 }
