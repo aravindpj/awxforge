@@ -427,45 +427,56 @@ export function IntroFigure() {
             </span>
           </div>
 
-          <div key={run} className={`agents-panel${run > 0 && !reduced ? " is-enter" : ""}`}>
-            <h3>{agent.title}</h3>
-            <p className="agents-prob">{agent.problem}</p>
-            <ol className="agents-steps">
-              {agent.steps.map((step, stepIndex) => {
-                const state = stepStates[stepIndex] ?? "idle";
-                return (
-                  <li key={step.code} data-state={state}>
-                    <span className="agents-code">{step.code}</span>
-                    <span>{step.text}</span>
-                    <span className="agents-st" aria-hidden="true">
-                      <i className="agents-sp" />
-                      <Icon name="chk" className="agents-mark agents-ck" />
-                      <Icon name="flag" className="agents-mark agents-fl" />
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
-            <div
-              className={`agents-res${showResult ? " is-show" : ""}`}
-              aria-live={playing ? "off" : "polite"}
-            >
-              {showResult ? (
-                agent.cta ? (
-                  <a className="agents-cta" href="#contact">
-                    Tell us about your workflow
-                    <Icon name="arr" />
-                  </a>
-                ) : (
-                  agent.results?.map((label, resultIndex) => (
-                    <span key={label} className={`agents-chip${resultIndex ? " is-flag" : ""}`}>
-                      <Icon name={resultIndex ? "flag" : "chk"} />
-                      {label}
-                    </span>
-                  ))
-                )
-              ) : null}
-            </div>
+          <div className="agents-stage">
+            {agents.map((item, itemIndex) => {
+              const active = itemIndex === index;
+              const revealed = !active || showResult;
+              return (
+                <div
+                  key={item.ref}
+                  className={`agents-panel${active ? " is-active" : ""}`}
+                  aria-hidden={active ? undefined : true}
+                  inert={active ? undefined : true}
+                >
+                  <h3>{item.title}</h3>
+                  <p className="agents-prob">{item.problem}</p>
+                  <ol className="agents-steps">
+                    {item.steps.map((step, stepIndex) => {
+                      const state = active ? (stepStates[stepIndex] ?? "idle") : "idle";
+                      return (
+                        <li key={step.code} data-state={state}>
+                          <span className="agents-code">{step.code}</span>
+                          <span>{step.text}</span>
+                          <span className="agents-st" aria-hidden="true">
+                            <i className="agents-sp" />
+                            <Icon name="chk" className="agents-mark agents-ck" />
+                            <Icon name="flag" className="agents-mark agents-fl" />
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                  <div
+                    className={`agents-res${revealed ? " is-show" : ""}`}
+                    aria-live={active && !playing ? "polite" : "off"}
+                  >
+                    {item.cta ? (
+                      <a className="agents-cta" href="#contact">
+                        Tell us about your workflow
+                        <Icon name="arr" />
+                      </a>
+                    ) : (
+                      item.results?.map((label, resultIndex) => (
+                        <span key={label} className={`agents-chip${resultIndex ? " is-flag" : ""}`}>
+                          <Icon name={resultIndex ? "flag" : "chk"} />
+                          {label}
+                        </span>
+                      ))
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

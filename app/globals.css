@@ -1021,14 +1021,14 @@ html[data-intro="exiting"] .mask-line > span {
 
 .agents-slab-name {
   display: block;
+  min-height: 1.35em;
   font-weight: 500;
-  animation: agents-rise 0.65s var(--ease) both;
+  animation: agents-rise 0.45s var(--ease) both;
 }
 
 @keyframes agents-rise {
   from {
     opacity: 0;
-    transform: translateY(8px);
   }
 }
 
@@ -1118,6 +1118,19 @@ html[data-intro="exiting"] .mask-line > span {
   color: var(--ink);
 }
 
+.agents-stage {
+  display: grid;
+}
+
+.agents-stage > .agents-panel {
+  grid-area: 1 / 1;
+}
+
+.agents-panel:not(.is-active) {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .agents-panel h3 {
   margin: 14px 0 6px;
   font-size: 26px;
@@ -1130,17 +1143,6 @@ html[data-intro="exiting"] .mask-line > span {
   max-width: 38em;
   margin: 0 0 18px;
   color: var(--secondary);
-}
-
-.agents-panel.is-enter {
-  animation: agents-enter 0.55s var(--ease);
-}
-
-@keyframes agents-enter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
 }
 
 .agents-steps {
@@ -1241,19 +1243,18 @@ html[data-intro="exiting"] .mask-line > span {
 .agents-res {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
   min-height: 42px;
   margin-top: 18px;
   opacity: 0;
-  transform: translateY(8px);
-  transition:
-    opacity 0.6s var(--ease),
-    transform 0.6s var(--ease);
+  pointer-events: none;
+  transition: opacity 0.6s var(--ease);
 }
 
 .agents-res.is-show {
   opacity: 1;
-  transform: none;
+  pointer-events: auto;
 }
 
 .agents-chip {
@@ -1412,7 +1413,6 @@ html[data-intro="exiting"] .mask-line > span {
 
   .agents-live i,
   .agents-sp,
-  .agents-panel.is-enter,
   .agents-slab-name,
   .lane-bar,
   .lane-in,
