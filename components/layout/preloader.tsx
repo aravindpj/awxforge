@@ -130,7 +130,6 @@ export function Preloader() {
         <AwxMark
           className="awx-hero"
           variant="full"
-          tone="light"
           animate={reduced ? "none" : "once"}
           onComplete={() => {
             if (!armed.current || reducedRef.current || leaving.current) return;

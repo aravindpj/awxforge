@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AwxLockup } from "@/components/brand/awx-lockup";
 import { Button } from "@/components/ui/Button";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { resolveHeaderAnimate } from "@/lib/intro-state";
 
 function subscribeToIntro(onChange: () => void) {
@@ -101,6 +102,8 @@ export function SiteHeader() {
           >
             000
           </span>
+
+          <ThemeToggle />
 
           <div className="hidden md:block">
             <Button href="#contact" size="sm">

@@ -14,7 +14,7 @@ const playTokens = new Map<string, number>();
 
 export function AwxMark({
   variant,
-  tone = "light",
+  tone = "auto",
   animate = "none",
   speed = 1,
   tight = false,
@@ -22,7 +22,7 @@ export function AwxMark({
   className,
 }: {
   variant: "full" | "x";
-  tone?: "light" | "ink" | "orange";
+  tone?: "auto" | "light" | "ink" | "orange";
   animate?: "once" | "loop" | "none";
   speed?: number;
   tight?: boolean;
@@ -33,7 +33,7 @@ export function AwxMark({
   const svgRef = useRef<SVGSVGElement>(null);
   const onCompleteRef = useRef(onComplete);
   const mark = variant === "full" ? fullMark : compactMark;
-  const colors = tones[tone];
+  const colors = tone === "auto" ? null : tones[tone];
   const viewBox = tight && variant === "full" ? fullMark.tightViewBox : mark.viewBox;
 
   useEffect(() => {
@@ -65,9 +65,9 @@ export function AwxMark({
       viewBox={viewBox}
       style={
         {
-          "--m": colors.ink,
-          "--a": colors.orange,
-          "--bg": colors.bg,
+          ...(colors
+            ? { "--m": colors.ink, "--a": colors.orange, "--bg": colors.bg }
+            : null),
           "--awx-speed": speed,
         } as React.CSSProperties
       }

@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useSyncExternalStore } from "react";
 import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
 import { colors } from "@/lib/tokens";
+import { subscribeTheme, themePairSnapshot } from "@/lib/theme";
 import { Frame } from "@/components/ui/Section";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 
@@ -10,22 +11,27 @@ const text =
   "We believe technology should do more than digitise existing processes. It should challenge unnecessary complexity. Simplify the way work gets done. Transform what’s possible.";
 
 const words = text.split(" ");
+const lightPair = { theme: "light", dim: colors.dim, ink: colors.ink };
 
 function Word({
   progress,
   index,
+  from,
+  to,
   children,
 }: {
   progress: MotionValue<number>;
   index: number;
+  from: string;
+  to: string;
   children: string;
 }) {
   const start = index / words.length;
   const end = Math.min(1, start + 1.15 / words.length);
-  const color = useTransform(progress, [start, end], [colors.dim, colors.ink]);
+  const color = useTransform(progress, [start, end], [from, to]);
 
   return (
-    <motion.span style={{ color }} className="belief-word">
+    <motion.span suppressHydrationWarning style={{ color }} className="belief-word">
       {children}{" "}
     </motion.span>
   );
@@ -37,6 +43,7 @@ export function Belief() {
     target: ref,
     offset: ["start start", "end end"],
   });
+  const pair = useSyncExternalStore(subscribeTheme, themePairSnapshot, () => lightPair);
 
   return (
     <section
@@ -62,7 +69,13 @@ export function Belief() {
             className="max-w-[14em] text-[clamp(32px,4.8vw,72px)] leading-[1.12] tracking-[-0.035em]"
           >
             {words.map((word, index) => (
-              <Word key={`${word}-${index}`} progress={scrollYProgress} index={index}>
+              <Word
+                key={`${pair.ink}-${word}-${index}`}
+                progress={scrollYProgress}
+                index={index}
+                from={pair.dim}
+                to={pair.ink}
+              >
                 {word}
               </Word>
             ))}

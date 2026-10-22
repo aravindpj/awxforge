@@ -9,8 +9,24 @@
   --muted: #9a9a9a;
   --dim: #d4d4d4;
   --accent: #ff4f00;
+  --highlight: #c8c8c8;
+  --nav: rgb(255 255 255 / 0.84);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  --bg: #0a0a0a;
+  --surface: #141414;
+  --line: #2a2a2a;
+  --ink: #f3f4f6;
+  --secondary: #a3a3a3;
+  --muted: #737373;
+  --dim: #3a3a3a;
+  --accent: #ff4f00;
+  --highlight: #4a4a4a;
+  --nav: rgb(10 10 10 / 0.84);
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -71,7 +87,11 @@ body {
 }
 
 .frame-grid {
-  background-image: linear-gradient(to right, rgb(10 10 10 / 0.055) 1px, transparent 1px);
+  background-image: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--ink) 6%, transparent) 1px,
+    transparent 1px
+  );
   background-size: calc(100% / 12) 100%;
 }
 
@@ -93,9 +113,34 @@ body {
 }
 
 .nav.is-scrolled {
-  background: rgb(255 255 255 / 0.84);
+  background: var(--nav);
   border-bottom-color: var(--line);
   backdrop-filter: blur(16px);
+}
+
+.theme-toggle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.theme-icon-sun {
+  display: none;
+}
+
+html[data-theme="dark"] .theme-icon-moon {
+  display: none;
+}
+
+html[data-theme="dark"] .theme-icon-sun {
+  display: block;
 }
 
 .link-draw {
@@ -183,7 +228,7 @@ html[data-intro="exiting"] .mask-line > span {
 .diagram {
   position: relative;
   border: 1px solid var(--line);
-  background: #fff;
+  background: var(--bg);
   padding: 28px 20px;
 }
 
@@ -263,7 +308,7 @@ html[data-intro="exiting"] .mask-line > span {
   height: 38px;
   border-radius: 6px;
   border: 1px solid var(--line);
-  background: #fff;
+  background: var(--bg);
   color: var(--secondary);
   transition: 0.5s var(--ease);
 }
@@ -293,13 +338,13 @@ html[data-intro="exiting"] .mask-line > span {
 }
 
 .diagram-in.is-on {
-  border-color: #c8c8c8;
-  background: #fff;
+  border-color: var(--highlight);
+  background: var(--bg);
 }
 
 .diagram-in.is-on .diagram-ic {
   color: var(--secondary);
-  border-color: #c8c8c8;
+  border-color: var(--highlight);
 }
 
 .diagram-out {
@@ -308,8 +353,8 @@ html[data-intro="exiting"] .mask-line > span {
 
 .diagram-out.is-done {
   opacity: 1;
-  background: #fff;
-  border-color: #c8c8c8;
+  background: var(--bg);
+  border-color: var(--highlight);
 }
 
 .diagram-out.is-done .diagram-ic {
@@ -339,8 +384,8 @@ html[data-intro="exiting"] .mask-line > span {
 }
 
 .diagram-out.is-done .diagram-tick {
-  background: #fff;
-  border-color: #c8c8c8;
+  background: var(--bg);
+  border-color: var(--highlight);
 }
 
 .diagram-out.is-done .diagram-tick svg {
@@ -398,7 +443,7 @@ html[data-intro="exiting"] .mask-line > span {
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--bg);
   text-align: center;
 }
 
@@ -527,7 +572,7 @@ html[data-intro="exiting"] .mask-line > span {
     overflow: hidden;
     border: 1px solid var(--line);
     border-radius: 6px;
-    background: #fff;
+    background: var(--bg);
     color: var(--secondary);
     font-family: var(--font-mono), ui-monospace, monospace;
     font-size: 10px;
@@ -538,7 +583,7 @@ html[data-intro="exiting"] .mask-line > span {
   }
 
   .lane-tab[aria-selected="true"] {
-    border-color: #c8c8c8;
+    border-color: var(--highlight);
     color: var(--ink);
   }
 
@@ -573,7 +618,7 @@ html[data-intro="exiting"] .mask-line > span {
     padding: 12px;
     border: 1px solid var(--line);
     border-radius: 8px;
-    background: #fff;
+    background: var(--bg);
   }
 
   .lane-in {
@@ -588,7 +633,7 @@ html[data-intro="exiting"] .mask-line > span {
     height: 44px;
     border: 1px solid var(--line);
     border-radius: 6px;
-    background: #fff;
+    background: var(--bg);
     color: var(--secondary);
   }
 
@@ -670,7 +715,7 @@ html[data-intro="exiting"] .mask-line > span {
     padding: 6px 10px 6px 6px;
     border: 1px solid var(--line);
     border-radius: 8px;
-    background: #fff;
+    background: var(--bg);
   }
 
   .lane-chip-face.is-pulse {
@@ -714,7 +759,7 @@ html[data-intro="exiting"] .mask-line > span {
   }
 
   .lane-out.is-ready {
-    border-color: #c8c8c8;
+    border-color: var(--highlight);
     opacity: 1;
   }
 
@@ -751,7 +796,7 @@ html[data-intro="exiting"] .mask-line > span {
   }
 
   .lane-out.is-ready .lane-check {
-    border-color: #c8c8c8;
+    border-color: var(--highlight);
     opacity: 1;
   }
 
@@ -847,7 +892,7 @@ html[data-intro="exiting"] .mask-line > span {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--bg);
 }
 
 .agents-rail {
@@ -883,7 +928,7 @@ html[data-intro="exiting"] .mask-line > span {
   padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 6px;
-  background: #fff;
+  background: var(--bg);
   color: var(--ink);
   font: inherit;
   text-align: left;
@@ -896,7 +941,7 @@ html[data-intro="exiting"] .mask-line > span {
 
 .agents-mod:hover,
 .agents-mod[aria-pressed="true"] {
-  border-color: #c8c8c8;
+  border-color: var(--highlight);
 }
 
 .agents-mod.is-next {
@@ -911,7 +956,7 @@ html[data-intro="exiting"] .mask-line > span {
   height: 36px;
   border: 1px solid var(--line);
   border-radius: 6px;
-  background: #fff;
+  background: var(--bg);
   transition:
     background-color 0.4s var(--ease),
     border-color 0.4s var(--ease),
@@ -966,12 +1011,12 @@ html[data-intro="exiting"] .mask-line > span {
 .agents-slab.is-top {
   overflow: hidden;
   border: 1px solid var(--line);
-  background: #fff;
+  background: var(--bg);
 }
 
 .agents-slab.is-base {
   border: 1px solid var(--line);
-  background: #fff;
+  background: var(--bg);
 }
 
 .agents-slab-name {
@@ -1225,7 +1270,7 @@ html[data-intro="exiting"] .mask-line > span {
 
 .agents-chip.is-flag {
   border-color: var(--line);
-  background: #fff;
+  background: var(--bg);
   color: var(--accent);
 }
 
@@ -1236,7 +1281,7 @@ html[data-intro="exiting"] .mask-line > span {
   padding: 10px 16px;
   border-radius: 6px;
   background: var(--ink);
-  color: #fff;
+  color: var(--bg);
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
@@ -1394,7 +1439,7 @@ html[data-intro="exiting"] .mask-line > span {
   }
 
   .lane-out {
-    border-color: #c8c8c8;
+    border-color: var(--highlight);
   }
 
   .lane-out .lane-tile {
@@ -1404,7 +1449,7 @@ html[data-intro="exiting"] .mask-line > span {
   }
 
   .lane-check {
-    border-color: #c8c8c8;
+    border-color: var(--highlight);
   }
 
   .diagram-in.is-on {
@@ -1420,7 +1465,7 @@ html[data-intro="exiting"] .mask-line > span {
 
   .diagram-out {
     opacity: 1;
-    background: #fff;
+    background: var(--bg);
     border-color: var(--dim);
   }
 
@@ -1431,7 +1476,7 @@ html[data-intro="exiting"] .mask-line > span {
   }
 
   .diagram-out .diagram-tick {
-    background: #fff;
+    background: var(--bg);
     border-color: var(--dim);
   }
 

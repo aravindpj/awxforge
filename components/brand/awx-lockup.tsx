@@ -3,13 +3,13 @@ import { AwxMark } from "@/components/brand/awx-mark";
 export function AwxLockup({
   animate = "none",
   speed = 1,
-  tone = "light",
+  tone = "auto",
   onComplete,
   className,
 }: {
   animate?: "once" | "loop" | "none";
   speed?: number;
-  tone?: "light" | "ink" | "orange";
+  tone?: "auto" | "light" | "ink" | "orange";
   onComplete?: () => void;
   className?: string;
 }) {

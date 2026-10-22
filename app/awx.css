@@ -3,6 +3,8 @@
   width: auto;
   height: auto;
   overflow: visible;
+  --m: var(--ink);
+  --a: var(--accent);
 }
 
 .awx-mark[data-animate="once"] .awx-mm1,
@@ -148,7 +150,7 @@ html[data-intro="play"] [data-awx-lockup] {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #fff;
+  background-color: var(--bg);
   background-image:
     linear-gradient(var(--line) 1px, transparent 1px),
     linear-gradient(90deg, var(--line) 1px, transparent 1px);
