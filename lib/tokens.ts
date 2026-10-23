@@ -6,7 +6,7 @@ export const colors = {
   secondary: "#5C5C5C",
   muted: "#9A9A9A",
   dim: "#D4D4D4",
-  accent: "#FF4F00",
+  accent: "#722F7A",
 } as const;
 
 export const site = {

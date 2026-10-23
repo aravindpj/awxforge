@@ -20,4 +20,4 @@ Each filled outline is masked by its centerline, stroked 26px white with `pathLe
 
 At speed 1 the ink takes 2.4s (`cubic-bezier(.55, .05, .3, 1)`). The orange strike takes 0.7s (`cubic-bezier(.3, .6, .3, 1)`) after a 2.55s delay. A ring at `(200, 48)` scales from 0.4 to 3.4 and fades, lasting 0.9s after a 3.1s delay. Durations and delays divide by `speed`.
 
-Ink `#0A0A0A`, orange `#FF4F00`, background `#FFFFFF`. The ink shape has a 5px background-colored stroke with `paint-order: stroke`, so the orange strike reads as passing behind the pen.
+Ink `#0A0A0A`, aubergine `#722F7A`, background `#FFFFFF`. The ink shape has a 5px background-colored stroke with `paint-order: stroke`, so the orange strike reads as passing behind the pen.
