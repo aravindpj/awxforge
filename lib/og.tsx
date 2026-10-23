@@ -24,7 +24,7 @@ export function OgImage() {
     >
       <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
         <svg width="300" height="122" viewBox="0 0 250 102">
-          <path d={fullMark.orange} fill="#FF4F00" />
+          <path d={fullMark.orange} fill="#722F7A" />
           <path
             d={fullMark.ink}
             fill="#0A0A0A"

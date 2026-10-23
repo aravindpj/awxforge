@@ -8,7 +8,7 @@
   --secondary: #5c5c5c;
   --muted: #9a9a9a;
   --dim: #d4d4d4;
-  --accent: #ff4f00;
+  --accent: #722f7a;
   --highlight: #c8c8c8;
   --nav: rgb(255 255 255 / 0.84);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -23,7 +23,7 @@ html[data-theme="dark"] {
   --secondary: #a3a3a3;
   --muted: #737373;
   --dim: #3a3a3a;
-  --accent: #ff4f00;
+  --accent: #722f7a;
   --highlight: #4a4a4a;
   --nav: rgb(10 10 10 / 0.84);
   color-scheme: dark;
@@ -57,7 +57,7 @@ body {
 
 ::selection {
   background: var(--accent);
-  color: var(--ink);
+  color: #fff;
 }
 
 :focus {

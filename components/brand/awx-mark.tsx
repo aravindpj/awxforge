@@ -4,9 +4,9 @@ import { useEffect, useId, useRef } from "react";
 import { compactMark, fullMark } from "@/lib/brand/mark-paths.generated";
 
 const tones = {
-  light: { ink: "#0A0A0A", orange: "#FF4F00", bg: "#FFFFFF" },
-  ink: { ink: "#F3F4F6", orange: "#FF4F00", bg: "#0A0A0A" },
-  orange: { ink: "#FFFFFF", orange: "#0A0A0A", bg: "#FF4F00" },
+  light: { ink: "#0A0A0A", orange: "#722F7A", bg: "#FFFFFF" },
+  ink: { ink: "#F3F4F6", orange: "#722F7A", bg: "#0A0A0A" },
+  orange: { ink: "#FFFFFF", orange: "#0A0A0A", bg: "#722F7A" },
 } as const;
 
 const completed = new Set<string>();

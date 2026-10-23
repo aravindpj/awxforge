@@ -175,7 +175,7 @@ const icon = `<?xml version="1.0" encoding="UTF-8"?>
       .ink { fill: #FFFFFF; stroke: transparent; }
     }
   </style>
-  <path fill="#FF4F00" d="${compactOrange.outline}"/>
+  <path fill="#722F7A" d="${compactOrange.outline}"/>
   <path class="ink" fill="#0A0A0A" stroke="#FFFFFF" stroke-width="5" stroke-linejoin="round" paint-order="stroke" d="${compactInk.outline}"/>
 </svg>
 `;
@@ -186,7 +186,7 @@ const apple = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180">
   <rect width="180" height="180" fill="#FFFFFF"/>
   <svg x="40" y="24" width="100" height="132" viewBox="166 0 76 100">
-    <path fill="#FF4F00" d="${compactOrange.outline}"/>
+    <path fill="#722F7A" d="${compactOrange.outline}"/>
     <path fill="#0A0A0A" stroke="#FFFFFF" stroke-width="5" stroke-linejoin="round" paint-order="stroke" d="${compactInk.outline}"/>
   </svg>
 </svg>

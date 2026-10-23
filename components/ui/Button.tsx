@@ -13,7 +13,7 @@ const sizes: Record<Size, string> = {
 function classes(variant: Variant, size: Size, className: string) {
   const base = `inline-flex w-full items-center justify-center rounded-[4px] font-medium tracking-[-0.01em] transition-colors duration-700 ease-forge sm:w-auto ${sizes[size]} ${className}`;
   if (variant === "primary") {
-    return `${base} bg-accent text-ink hover:bg-ink hover:text-bg`;
+    return `${base} bg-accent text-white hover:bg-ink hover:text-bg`;
   }
   return `${base} border border-line bg-bg text-ink hover:border-ink`;
 }
